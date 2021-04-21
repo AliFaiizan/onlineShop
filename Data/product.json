@@ -1,0 +1,24 @@
+[
+  {
+    "id": "1",
+    "title": "Book1",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Liji2_no_bg.png",
+    "price": "15",
+    "description": "This is a nice book"
+  },
+  {
+    "id": "2",
+    "title": "Book2",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Liji2_no_bg.png",
+    "price": "15",
+    "description": "This is a nice book"
+  },
+  {
+    "id": "3",
+    "title": "Book3",
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Liji2_no_bg.png",
+    "price": "15",
+    "description": "This is a nice book"
+  }
+
+]
