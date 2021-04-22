@@ -1,1 +1,4 @@
-{"products":[{"id":"1","qty":2}],"totalprice":"01515"}
+{
+  "products": [{ "id": "1", "qty": 1 }],
+  "totalprice": 70
+}

@@ -1,10 +1,11 @@
+const { json } = require("body-parser");
 const fs = require("fs");
 
 const path = require("path");
 
 const p = path.join(
   path.dirname(require.main.filename),
-  "data",
+  "Data",
   "product.json"
 );
 
@@ -20,7 +21,7 @@ const getDataFromFile = (cb) => {
 
 module.exports = class product {
   constructor(id, title, imageUrl, price, description) {
-    this.id = null;
+    this.id = id;
     this.title = title;
     this.imageUrl = imageUrl;
     this.description = description;
@@ -29,21 +30,27 @@ module.exports = class product {
 
   Save() {
     getDataFromFile((product) => {
+      let self = this;
       if (this.id) {
         const existingProductIndex = product.findIndex((prod) => {
           return (prod.id = this.id);
         });
+        //const upprod=[...product];
         product[existingProductIndex] = this;
+
         fs.writeFile(p, JSON.stringify(product), (err) => {
-          console.log(err);
+          if (err) {
+            console.log(err);
+          }
         });
-      }else{
+      } else {
         product.push(this);
         fs.writeFile(p, JSON.stringify(product), (err) => {
-          console.log(err);
+          if (err) {
+            console.log(err);
+          }
         });
       }
-     
     });
   }
 

@@ -1,10 +1,10 @@
 [
   {
     "id": "1",
-    "title": "Book1",
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d0/Liji2_no_bg.png",
-    "price": "15",
-    "description": "This is a nice book"
+    "title": "spartan",
+    "imageUrl": "https://i.pinimg.com/originals/13/c7/d5/13c7d50dacf29dc67ced4bc60d004991.jpg",
+    "description": "   he is true spartan        ",
+    "price": "70"
   },
   {
     "id": "2",
@@ -20,5 +20,4 @@
     "price": "15",
     "description": "This is a nice book"
   }
-
 ]

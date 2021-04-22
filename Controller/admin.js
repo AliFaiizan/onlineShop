@@ -13,8 +13,9 @@ module.exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
+  const id= null;
 
-  const product = new products(title, imageUrl, price, description);
+  const product = new products(id,title, imageUrl, price, description);
 
   product.Save();
 
@@ -41,6 +42,7 @@ module.exports.getEditProduct = (req, res, next) => {
 };
 
 module.exports.postEditProduct = (req, res, next) => {
+  
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedimgUrl = req.body.imageUrl;
@@ -56,6 +58,7 @@ module.exports.postEditProduct = (req, res, next) => {
   );
 
   updatedProduct.Save();
+  res.redirect("/admin/products")
 };
 
 module.exports.getAdminProducts = (req, res, next) => {
