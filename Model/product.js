@@ -1,7 +1,8 @@
-const { json } = require("body-parser");
+
 const fs = require("fs");
 
 const path = require("path");
+const Cart = require("./cart");
 
 const p = path.join(
   path.dirname(require.main.filename),
@@ -14,7 +15,7 @@ const getDataFromFile = (cb) => {
     if (err) {
       return cb([]);
     }
-
+    
     cb(JSON.parse(filecontent));
   });
 };
@@ -30,14 +31,15 @@ module.exports = class product {
 
   Save() {
     getDataFromFile((product) => {
-      let self = this;
+      
       if (this.id) {
         const existingProductIndex = product.findIndex((prod) => {
-          return (prod.id = this.id);
+          return (prod.id === this.id);
         });
         //const upprod=[...product];
+        
         product[existingProductIndex] = this;
-
+        
         fs.writeFile(p, JSON.stringify(product), (err) => {
           if (err) {
             console.log(err);
@@ -45,6 +47,7 @@ module.exports = class product {
         });
       } else {
         product.push(this);
+        
         fs.writeFile(p, JSON.stringify(product), (err) => {
           if (err) {
             console.log(err);
@@ -64,4 +67,18 @@ module.exports = class product {
       cb(prod);
     });
   }
+
+  static deleteById(id,cb) {
+    getDataFromFile((pro) => {
+      const product= pro.find((p) => p.id === id);
+      const updatedProducts= pro.filter(p => p.id !== id)
+      
+      fs.writeFile(p,JSON.stringify(updatedProducts),(err) => {
+        if(!err){
+          Cart.removeProduct(product.id,product.price)
+          cb(id)
+        }}
+    )
+  }
+  )}
 };

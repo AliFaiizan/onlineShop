@@ -1,4 +1,5 @@
 const products = require("../Model/product");
+const Cart = require("../Model/cart");
 
 module.exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -13,9 +14,9 @@ module.exports.postAddProduct = (req, res, next) => {
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const id= null;
+  const id = null;
 
-  const product = new products(id,title, imageUrl, price, description);
+  const product = new products(id, title, imageUrl, price, description);
 
   product.Save();
 
@@ -42,12 +43,13 @@ module.exports.getEditProduct = (req, res, next) => {
 };
 
 module.exports.postEditProduct = (req, res, next) => {
-  
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedimgUrl = req.body.imageUrl;
   const updatedprice = req.body.price;
   const updateddescription = req.body.description;
+
+  const lastProductPrice= req.body.productPrice;
 
   const updatedProduct = new products(
     prodId,
@@ -56,9 +58,30 @@ module.exports.postEditProduct = (req, res, next) => {
     updatedprice,
     updateddescription
   );
+  //update cart price when edited product
+  //
+  Cart.fetchCart((content) => {
+    const productPriceToUpdate= content.products.find((item) => {
+      return item.id === prodId;
+    })
+
+    const totalqty= productPriceToUpdate.qty; // total quantity of product in cart 
+    const totalLastPrice= totalqty*lastProductPrice; // last total price of this product in cart
+    const totalUpdatedPrice= updatedprice*totalqty;  // new total price of this product
+
+
+    const UpdatedCart= content;
+
+    UpdatedCart.totalprice= UpdatedCart.totalprice - totalLastPrice; // deduct the last total price of product from cart
+
+    UpdatedCart.totalprice+= totalUpdatedPrice; // add new updated price in cart
+
+    Cart.updateCart(UpdatedCart);
+
+  })
 
   updatedProduct.Save();
-  res.redirect("/admin/products")
+  res.redirect("/admin/products");
 };
 
 module.exports.getAdminProducts = (req, res, next) => {
@@ -72,4 +95,12 @@ module.exports.getAdminProducts = (req, res, next) => {
       productCSS: true,
     });
   });
+};
+
+module.exports.postDeleteProducts = (req, res, next) => {
+  let productId = req.body.productId; 
+  products.deleteById(productId,(deletedId) => {
+    console.log("deletd product has id of " + deletedId);
+    res.redirect('/admin/products');
+  })
 };

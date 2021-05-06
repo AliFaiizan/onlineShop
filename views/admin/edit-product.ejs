@@ -15,7 +15,7 @@
             <div class="form-control">
                 <label for="imageUrl">Image URL</label>
                 <input type="text" name="imageUrl" id="imageUrl" value=<% if(editing) { %> <%= product.imageUrl %> <% } else {%> <% } %> >
-                <img style="height:200px;width:200px; " src=<% if (editing) { %> <%= product.imageUrl %> <% } else { %> "https://image.shutterstock.com/image-vector/ui-image-placeholder-wireframes-apps-260nw-1037719204.jpg" <% } %>   alt="image">
+                <img style="height:200px;width:200px; " src="<% if (editing) { %> <%= product.imageUrl %> <% } else { %> https://image.shutterstock.com/image-vector/ui-image-placeholder-wireframes-apps-260nw-1037719204.jpg <% } %>"   alt="image">
             </div>
             <div class="form-control">
                 <label for="price">Price</label>
@@ -27,6 +27,7 @@
             </div>
             <% if(editing) { %> 
                 <input type="hidden" value="<%= product.id %>" name="productId" >
+                <input type="hidden" value="<%= product.price %>" name="productPrice" >
                 <% }  %>
             <button class="btn" type="submit"> <% if(editing) { %> Update Product <% } else {%> Add Product <% } %>  </button>
         </form>

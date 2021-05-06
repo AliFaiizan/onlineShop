@@ -36,4 +36,52 @@ module.exports = class Cart {
       });
     });
   }
+
+  static fetchCart(cb) {
+    fs.readFile(p, "utf8", (err, data) => {
+      if (!err) {
+        
+        cb(JSON.parse(data));
+      } else {
+        console.log(err);
+      }
+    });
+  }
+
+  static updateCart(content) {
+    fs.writeFile(p, JSON.stringify(content), (err)=>{
+      if(err)
+      console.log(err);
+    })
+  }
+
+  static removeProduct(id, price) {
+    fs.readFile(p, "utf8", (err, cart) => {
+      if (!err) {
+        const nCart = JSON.parse(cart);
+        const productToUpdate = nCart.products.find((prod) => {
+          return prod.id === id;
+        });
+       if(!productToUpdate){
+         return;
+       }
+        let updatedCart = { ...nCart };
+
+        updatedCart.products = updatedCart.products.filter((prod) => {
+          return prod.id !== id;
+        });
+
+        updatedCart.totalprice =
+          updatedCart.totalprice - parseInt(price) * productToUpdate.qty;// this has some issue when we delete item form admin and total price in cart does not update
+
+        fs.writeFile(p, JSON.stringify(updatedCart), (err) => {
+          if (err) {
+            console.log(err);
+          }
+        });
+      } else {
+        console.log(err);
+      }
+    });
+  }
 };
