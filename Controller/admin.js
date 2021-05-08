@@ -29,15 +29,17 @@ module.exports.getEditProduct = (req, res, next) => {
   if (!editing) {
     return res.redirect("/");
   }
-  products.findById(prodId, (product) => {
-    if (!product) {
+  
+  products.findById(prodId).then(([product]) =>{
+    
+    if (!product[0]) {
       return res.redirect("/");
     }
     res.render("admin/edit-product", {
       pageTitle: "Edit Product",
       path: "/admin/edit-product",
       editing,
-      product,
+      product:product[0],
     });
   });
 };
@@ -60,47 +62,47 @@ module.exports.postEditProduct = (req, res, next) => {
   );
   //update cart price when edited product
   //
-  Cart.fetchCart((content) => {
-    const productPriceToUpdate= content.products.find((item) => {
-      return item.id === prodId;
-    })
+  // Cart.fetchCart((content) => {
+  //   const productPriceToUpdate= content.products.find((item) => {
+  //     return item.id === prodId;
+  //   })
 
-    const totalqty= productPriceToUpdate.qty; // total quantity of product in cart 
-    const totalLastPrice= totalqty*lastProductPrice; // last total price of this product in cart
-    const totalUpdatedPrice= updatedprice*totalqty;  // new total price of this product
+  //   const totalqty= productPriceToUpdate.qty; // total quantity of product in cart 
+  //   const totalLastPrice= totalqty*lastProductPrice; // last total price of this product in cart
+  //   const totalUpdatedPrice= updatedprice*totalqty;  // new total price of this product
 
 
-    const UpdatedCart= content;
+  //   const UpdatedCart= content;
 
-    UpdatedCart.totalprice= UpdatedCart.totalprice - totalLastPrice; // deduct the last total price of product from cart
+  //   UpdatedCart.totalprice= UpdatedCart.totalprice - totalLastPrice; // deduct the last total price of product from cart
 
-    UpdatedCart.totalprice+= totalUpdatedPrice; // add new updated price in cart
+  //   UpdatedCart.totalprice+= totalUpdatedPrice; // add new updated price in cart
 
-    Cart.updateCart(UpdatedCart);
+  //   Cart.updateCart(UpdatedCart);
 
-  })
+  // })
 
   updatedProduct.Save();
   res.redirect("/admin/products");
 };
 
 module.exports.getAdminProducts = (req, res, next) => {
-  products.fetchAll((content) => {
+  products.fetchAll().then(([rows]) => {
     res.render("admin/products", {
-      prods: content,
+      prods: rows,
       pageTitle: "Admin Products",
       path: "/admin/products",
       hasProducts: products.length > 0,
       activeShop: true,
       productCSS: true,
     });
-  });
+  })
+  .catch((err) => {console.log(err)})
 };
 
 module.exports.postDeleteProducts = (req, res, next) => {
   let productId = req.body.productId; 
-  products.deleteById(productId,(deletedId) => {
-    console.log("deletd product has id of " + deletedId);
-    res.redirect('/admin/products');
-  })
+  products.deleteById(productId).then(() => {
+    res.redirect('/admin/products')
+  });
 };

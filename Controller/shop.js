@@ -4,37 +4,43 @@ const Cart = require("../Model/cart");
 
 
 module.exports.getProducts = (req, res, next) => {
-  products.fetchAll((content) => {
+  products.fetchAll()
+  .then(([rows,fields]) => {
+    
     res.render("shop/product-list", {
-      prods: content,
+      prods: rows,
       pageTitle: "All product",
       path: "/products",
     });
-  });
+  })
+  .catch((err) => {console.log(err)})
 };
 
 module.exports.getProductById = (req, res, next) => {
   const prodId = req.params.productId;
-  products.findById(prodId, (productFound) => {
+  products.findById(prodId).then(([product]) => {
+    
     res.render("shop/product-detail", {
-      product: productFound,
-      pageTitle: productFound.title,
+      product: product[0],
+      pageTitle: product[0].title,
       path: "/products",
     });
-    console.log(productFound.title);
-  });
+  })
+  .catch((err) => {res.send(err)});
 };
 
 //controller for displaying the index page (home page)
 
 module.exports.getIndex = (req, res, next) => {
-  products.fetchAll((content) => {
+  products.fetchAll().then(([rows,fields]) => {
     res.render("shop/index", {
-      prods: content,
+      prods: rows,
       pageTitle: "Shop",
       path: "/",
     });
-  });
+  
+  }).catch((err) => {console.log(err)})
+    
 };
 
 //controler for getting cart information
