@@ -3,8 +3,9 @@
     
     <body>
         <%- include('../includes/navigation.ejs') %>
-
+        
         <main>
+            <% total=0 %> 
             <% if (prods.length > 0) { %>
                 <div class="grid">
                     <% for (let product of prods) { %>
@@ -22,8 +23,8 @@
                                     <%= product.price %>
                                 </h2>
                                 <h4 >
-                                    X <%= product.qty %>
-                                </h4>
+                                    X <%= product.cartItem.quantity %>
+                                </h4> <span>Total : <%= product.price * product.cartItem.quantity %>  </span>
                                 <p class="product__description">
                                     <%= product.description %>
                                 </p>
@@ -31,17 +32,29 @@
                             <div class="card__actions">
                                 <form action="/cart/removeitem" method="POST">
                                     <input type="hidden" value="<%= product.id %>" name="productId">
-                                    <input type="hidden" value="<%= product.price %>" name="productPrice">
-                                    <button class="btn" type="submit">Delete</button>
+                                    
+                                    <button class="btn danger" type="submit">Delete</button>
                                 </form>
 
                             </div>
+                             <%  total= total + product.price * product.cartItem.quantity %> 
                         </article>
                         <% } %>
+
+                        
                 </div>
+                <hr>
+                 <span> <b> Grand Total : $</b><b><%=total %></b> </span>
+                 <hr>
+                 <div class="centered">
+                    <form action="/orders" method="POST">
+                    <button class="btn">Order Now</button>
+                    </form>
+                 </div>
+                    
                 <% } else { %>
-                    <h1>Cart is Empty!</h1>
+                    <h1 class="centered">Cart is Empty!</h1>
                     <% } %>
-                    <h1>Total Price : $<%= totalprice %> </h1>
+                    
         </main>
         <%- include('../includes/end.ejs') %>

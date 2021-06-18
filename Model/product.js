@@ -1,43 +1,26 @@
-const db= require("../util/database");
-const Cart = require("./cart");
+const Sequelize= require("sequelize");
+const sequelize= require("../util/database");
 
-
-
-module.exports = class product {
-  constructor(id, title, imageUrl, price, description) {
-    this.id = id;
-    this.title = title;
-    this.imageUrl = imageUrl;
-    this.description = description;
-    this.price = price;
+const Product = sequelize.define('product',{ 
+  id:{
+    type:Sequelize.INTEGER,
+    autoIncrement:true,
+    allowNull:false,
+    primaryKey:true
+  },
+  title:Sequelize.STRING,
+  price:{
+    type:Sequelize.DOUBLE,
+    allowNull:false,
+  },
+  imageUrl:{
+    type:Sequelize.STRING,
+    allowNull:false,
+  },
+  description:{
+    type:Sequelize.STRING,
+    allowNull:false,
   }
-
-  Save() {
-    
-    if(this.id){
-      db.execute('UPDATE `node-complete`.`products` SET `title` = ? , `imageUrl` = ? , `description` = ? , `price` = ? WHERE (`id` = ?)',[this.title,this.imageUrl,this.description,this.price,this.id])
-      .then(() =>console.log('record updated sucessfully')).catch((err) => console.log(err+'There was an error updating the record'))
-    }
-    else{
-      db.execute('INSERT INTO `node-complete`.`products` (`title`, `price`, `description`, `imageUrl`) VALUES (?,?, ?, ?)',[this.title,this.price,this.description,this.imageUrl])
-      .then(() => {
-           console.log("**NEW** record added sucessfully")
-      }).catch(err =>console.log(err))
-    }
-  }
-
-  static fetchAll() {
-   return db.execute("SELECT * FROM products")
-  
-  }
-
-  static findById(id) {
-    return db.execute("SELECT * FROM products WHERE id="+id)
-  }
-
-  static deleteById(id) {
-    return db.execute("DELETE FROM products WHERE id="+id)
-    //also remove this item from cart
-
-   
-}}
+})
+ 
+module.exports= Product;

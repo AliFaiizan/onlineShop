@@ -1,5 +1,14 @@
-const products = require("../Model/product");
+const Product = require("../Model/product");
 const Cart = require("../Model/cart");
+
+
+
+/** 
+ * @typedef {import("express").Request} req
+ * @typedef {import("express").Response} res
+ * @typedef {import("express").NextFunction} next
+ * 
+*/
 
 module.exports.getAddProduct = (req, res, next) => {
   res.render("admin/edit-product", {
@@ -9,18 +18,31 @@ module.exports.getAddProduct = (req, res, next) => {
   });
 };
 
+/** 
+ * @param {req} req 
+ * @param {res} res 
+ * 
+*/
 module.exports.postAddProduct = (req, res, next) => {
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const id = null;
+  
+  req.user.createProduct({ //mrythof defined by sequelize
+    //sequlize formate
+    title,
+    price,
+    imageUrl,
+    description,
+  }).then(() => {
+    console.log('sucessfully created entry')
+    res.redirect("/");
+  }).catch((error) => {
+    console.log(error)
+  })
 
-  const product = new products(id, title, imageUrl, price, description);
-
-  product.Save();
-
-  res.redirect("/");
+  
 };
 
 module.exports.getEditProduct = (req, res, next) => {
@@ -29,17 +51,18 @@ module.exports.getEditProduct = (req, res, next) => {
   if (!editing) {
     return res.redirect("/");
   }
-  
-  products.findById(prodId).then(([product]) =>{
-    
-    if (!product[0]) {
+  req.user.getProducts({where:{id:prodId}})
+  //Product.findByPk(prodId)
+  .then((prod) =>{
+    const product= prod[0]; //sequlize
+    if (!product) {
       return res.redirect("/");
     }
     res.render("admin/edit-product", {
       pageTitle: "Edit Product",
       path: "/admin/edit-product",
       editing,
-      product:product[0],
+      product:product,
     });
   });
 };
@@ -50,16 +73,21 @@ module.exports.postEditProduct = (req, res, next) => {
   const updatedimgUrl = req.body.imageUrl;
   const updatedprice = req.body.price;
   const updateddescription = req.body.description;
+  
 
-  const lastProductPrice= req.body.productPrice;
+  //const lastProductPrice= req.body.productPrice;
 
-  const updatedProduct = new products(
-    prodId,
-    updatedTitle,
-    updatedimgUrl,
-    updatedprice,
-    updateddescription
-  );
+  Product.findByPk(prodId)
+  .then((product) => {
+    product.title=updatedTitle;
+    product.imageUrl=updatedimgUrl;
+    product.price=updatedprice;
+    product.description=updateddescription;
+    return product.save();
+  })
+  .then(() =>{console.log('Product sucessfully updated')
+    res.redirect("/admin/products");})
+  .catch((err) => {console.log(err)})
   //update cart price when edited product
   //
   // Cart.fetchCart((content) => {
@@ -82,17 +110,17 @@ module.exports.postEditProduct = (req, res, next) => {
 
   // })
 
-  updatedProduct.Save();
-  res.redirect("/admin/products");
+  
+  
 };
 
 module.exports.getAdminProducts = (req, res, next) => {
-  products.fetchAll().then(([rows]) => {
+  req.user.getProducts().then((rows) => {
     res.render("admin/products", {
       prods: rows,
       pageTitle: "Admin Products",
       path: "/admin/products",
-      hasProducts: products.length > 0,
+      hasProducts: rows.length > 0,
       activeShop: true,
       productCSS: true,
     });
@@ -102,7 +130,8 @@ module.exports.getAdminProducts = (req, res, next) => {
 
 module.exports.postDeleteProducts = (req, res, next) => {
   let productId = req.body.productId; 
-  products.deleteById(productId).then(() => {
+  Product.destroy({where: {id: productId}})
+  .then(() => {
     res.redirect('/admin/products')
   });
 };

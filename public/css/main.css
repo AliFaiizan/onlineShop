@@ -196,6 +196,13 @@ form {
   background-color: #00695c;
   color: white;
 }
+.danger{
+ color: red;
+ border-color: red;
+}
+.danger:hover{
+  background-color: red;
+}
 
 @media (min-width: 768px) {
   .main-header__nav {
