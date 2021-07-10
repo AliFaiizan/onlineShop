@@ -1,15 +1,15 @@
-const {Sequelize} = require('sequelize');
+const GetDb = require("../util/database").GetDb;
+const mongodb = require("mongodb");
 
-const sequelize= require('../util/database')
+class Cart {
 
-
-const Cart = sequelize.define('Cart',{
-  id:{
-    type:Sequelize.INTEGER,
-    autoIncrement:true,
-    allowNull:false,
-    primaryKey:true
+  static getCartById(id) {
+    const db = GetDb();
+    return db.collection("users").findOne({_id:new mongodb.ObjectID(id)}).then((user) => {
+        return user.cart;
+    })
   }
-})
+}
+
 
 module.exports=Cart;

@@ -1,5 +1,6 @@
 const Product = require("../Model/product");
-const Cart = require("../Model/cart");
+
+const mongodb = require('mongodb');
 
 
 
@@ -10,7 +11,7 @@ const Cart = require("../Model/cart");
  * 
 */
 
-module.exports.getAddProduct = (req, res, next) => {
+module.exports.getAddProduct = (req, res, next) => { //mongo
   res.render("admin/edit-product", {
     pageTitle: "Add Product",
     path: "/admin/add-product",
@@ -23,38 +24,34 @@ module.exports.getAddProduct = (req, res, next) => {
  * @param {res} res 
  * 
 */
-module.exports.postAddProduct = (req, res, next) => {
+module.exports.postAddProduct = (req, res, next) => { //mongo
   const title = req.body.title;
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
+  const userId=req.user._id;
   
-  req.user.createProduct({ //mrythof defined by sequelize
-    //sequlize formate
-    title,
-    price,
-    imageUrl,
-    description,
-  }).then(() => {
-    console.log('sucessfully created entry')
-    res.redirect("/");
-  }).catch((error) => {
-    console.log(error)
+  const product= new Product (title,price,description,imageUrl,null,userId)
+  product.save().then(() => {
+    res.redirect('/')
+  })
+  .catch((err) => {
+    console.log(err)
   })
 
   
 };
 
-module.exports.getEditProduct = (req, res, next) => {
+module.exports.getEditProduct = (req, res, next) => { //mongo
   const prodId = req.params.productId;
   const editing = req.query.editing;
   if (!editing) {
     return res.redirect("/");
   }
-  req.user.getProducts({where:{id:prodId}})
+  Product.findById(prodId)
   //Product.findByPk(prodId)
-  .then((prod) =>{
-    const product= prod[0]; //sequlize
+  .then((product) =>{
+    //const product= prod[0]; //sequlize
     if (!product) {
       return res.redirect("/");
     }
@@ -77,50 +74,28 @@ module.exports.postEditProduct = (req, res, next) => {
 
   //const lastProductPrice= req.body.productPrice;
 
-  Product.findByPk(prodId)
+  Product.findById(prodId)
   .then((product) => {
     product.title=updatedTitle;
     product.imageUrl=updatedimgUrl;
     product.price=updatedprice;
     product.description=updateddescription;
-    return product.save();
+    const updatedProduct=new Product(updatedTitle,updatedprice,updateddescription,updatedimgUrl, new mongodb.ObjectID(prodId) );
+    return updatedProduct.save();
   })
   .then(() =>{console.log('Product sucessfully updated')
     res.redirect("/admin/products");})
   .catch((err) => {console.log(err)})
-  //update cart price when edited product
-  //
-  // Cart.fetchCart((content) => {
-  //   const productPriceToUpdate= content.products.find((item) => {
-  //     return item.id === prodId;
-  //   })
 
-  //   const totalqty= productPriceToUpdate.qty; // total quantity of product in cart 
-  //   const totalLastPrice= totalqty*lastProductPrice; // last total price of this product in cart
-  //   const totalUpdatedPrice= updatedprice*totalqty;  // new total price of this product
-
-
-  //   const UpdatedCart= content;
-
-  //   UpdatedCart.totalprice= UpdatedCart.totalprice - totalLastPrice; // deduct the last total price of product from cart
-
-  //   UpdatedCart.totalprice+= totalUpdatedPrice; // add new updated price in cart
-
-  //   Cart.updateCart(UpdatedCart);
-
-  // })
-
-  
-  
 };
 
 module.exports.getAdminProducts = (req, res, next) => {
-  req.user.getProducts().then((rows) => {
+  Product.fetchAll().then((Products) => {
     res.render("admin/products", {
-      prods: rows,
+      prods: Products,
       pageTitle: "Admin Products",
       path: "/admin/products",
-      hasProducts: rows.length > 0,
+      hasProducts: Products.length > 0,
       activeShop: true,
       productCSS: true,
     });
@@ -130,8 +105,11 @@ module.exports.getAdminProducts = (req, res, next) => {
 
 module.exports.postDeleteProducts = (req, res, next) => {
   let productId = req.body.productId; 
-  Product.destroy({where: {id: productId}})
+  Product.deleteById(productId)
   .then(() => {
-    res.redirect('/admin/products')
+   req.user.removeCartItem(productId).then(() => {
+      res.redirect("/admin/products");
+    })
+    
   });
 };
