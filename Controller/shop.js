@@ -1,5 +1,6 @@
 const Product = require("../Model/product");
-const Cart=require("../Model/cart");
+const Order = require("../Model/order");
+
 
 /**
  * @typedef {import("express").Request} req
@@ -15,8 +16,9 @@ const Cart=require("../Model/cart");
  * @param {next} next
  */
 module.exports.getProducts = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
     .then((products) => {
+      
       res.render("shop/product-list", {
         prods: products,
         pageTitle: "All product",
@@ -51,7 +53,7 @@ module.exports.getProductById = (req, res, next) => {
 // //controller for displaying the index page (home page)
 
 module.exports.getIndex = (req, res, next) => {
-  Product.fetchAll()
+  Product.find()
     .then((products) => {
       res.render("shop/index", {
         prods: products,
@@ -67,38 +69,15 @@ module.exports.getIndex = (req, res, next) => {
 // //controler for getting cart information
 
 module.exports.getCart = (req, res, next) => {
-let prods = [];
-let cartTotal=0;
- req.user.getCart()
- .then((cart) => {
-   if(cart.items.length>0){
-    cart.items.forEach((prod) => { //for each..... instead should use map // it should be in model
-      Product.findById(prod.productId).then((product) => {
-        product.quantity = prod.quantity;
-        prods.push(product);
-        cartTotal= cartTotal + product.price * product.quantity;
-        if (prods.length === cart.items.length) {
-          req.user.cartUpdateTotal(cartTotal).then(() => {
-               res.render("shop/cart", {
-                 prods: prods,
-                 cartTotal,
-                 pageTitle: "Cart",
-                 path: "/cart",
-               });
-          })
-       
-        }
-      });
-    });
-   }else{
+
+ req.user.populate('cart.items.productId').execPopulate()
+ .then((user) => {
      res.render("shop/cart", {
-       prods: prods,
+       prods: user.cart.items,
+       cartTotal:user.cart.total,
        pageTitle: "Cart",
-       path: "/cart",
-     });
-   }
-      
-   
+       path: "/cart", 
+     });   
  }).catch((err) => {
    console.log(err)
  });
@@ -110,12 +89,20 @@ let cartTotal=0;
 
 module.exports.postCart = (req, res, next) => {
   const prodId= req.body.productId;
-  // whenb add to cart is pressed
-  req.user.addToCart(prodId)
-  .then((result) => {
-    console.log("product Updated ")
-    res.redirect('/cart')
-  }).catch(err=>console.log(err))
+  // whenb add to cart is pressed 
+  req.user
+    .addToCart(prodId)
+    .then((user) => {
+      req.user= user
+      
+      return req.user.updateCartTotal();
+    })
+    .then(() => {
+      console.log(req.user);
+      // req.user = user; ///set updated user to previously saved user
+      res.redirect("/cart");
+    })
+    .catch((err) => console.log(err));
 
 }
 
@@ -125,23 +112,42 @@ module.exports.postCart = (req, res, next) => {
 
 module.exports.removeCartProduct = (req, res, next) => {
   let productId= req.body.productId;
-  req.user.removeCartItem(productId).then(() => {
-    console.log(`item sucessfully deleted`)
-    res.redirect('/cart')
-   }
-   )}
+  req.user.removeCartItem(productId)
+    .then((user) => {
+      req.user= user;
+      return req.user.updateCartTotal();
+    })
+    .then(() => {
+     //req.user = user; ///set updated user to previously saved user
+    res.redirect("/cart");
+   });
+}
+
 
 module.exports.postOrders=(req,res,next) => {
-  //map function return array with first element as promise
-  req.user.addOrders()[0].then(() => {
-
-    res.redirect('/orders')
+  req.user.populate("cart.items.productId").execPopulate()
+  .then((populatedUser) => {
+     let order = new Order({
+       userId: req.user._id,
+       products: populatedUser.cart.items,
+       total: populatedUser.total,
+     });
+     return order.save();
+  })
+  .then(() => {
+    req.user.cart.items=[];
+    req.user.cart.total=0;
+    req.user.save().then(() => {
+      res.redirect('/orders')
+           
+    })
   })
 }
 
 //controller for getting orders
 module.exports.getOrders = (req, res, next) => {
-   req.user.getOrders().then((orders) => {
+  Order.find({userId:req.user._id}).then((orders) => {
+    
     res.render("shop/orders", {
       pageTitle: "Orders",
       path: "/orders",

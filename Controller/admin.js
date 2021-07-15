@@ -1,5 +1,4 @@
 const Product = require("../Model/product");
-
 const mongodb = require('mongodb');
 
 
@@ -31,7 +30,7 @@ module.exports.postAddProduct = (req, res, next) => { //mongo
   const description = req.body.description;
   const userId=req.user._id;
   
-  const product= new Product (title,price,description,imageUrl,null,userId)
+  const product= new Product ({title,price,description,imageUrl,userId})
   product.save().then(() => {
     res.redirect('/')
   })
@@ -48,7 +47,7 @@ module.exports.getEditProduct = (req, res, next) => { //mongo
   if (!editing) {
     return res.redirect("/");
   }
-  Product.findById(prodId)
+  Product.findOne({_id:prodId})
   //Product.findByPk(prodId)
   .then((product) =>{
     //const product= prod[0]; //sequlize
@@ -73,16 +72,13 @@ module.exports.postEditProduct = (req, res, next) => {
   
 
   //const lastProductPrice= req.body.productPrice;
-
-  Product.findById(prodId)
-  .then((product) => {
-    product.title=updatedTitle;
-    product.imageUrl=updatedimgUrl;
-    product.price=updatedprice;
-    product.description=updateddescription;
-    const updatedProduct=new Product(updatedTitle,updatedprice,updateddescription,updatedimgUrl, new mongodb.ObjectID(prodId) );
-    return updatedProduct.save();
-  })
+  const updatedProduct ={
+    title:updatedTitle,
+    price:updatedprice,
+    description:updateddescription,
+    imageUrl:updatedimgUrl
+  };
+  return Product.findByIdAndUpdate(prodId,updatedProduct) //we can get one product can call save method on it
   .then(() =>{console.log('Product sucessfully updated')
     res.redirect("/admin/products");})
   .catch((err) => {console.log(err)})
@@ -90,7 +86,7 @@ module.exports.postEditProduct = (req, res, next) => {
 };
 
 module.exports.getAdminProducts = (req, res, next) => {
-  Product.fetchAll().then((Products) => {
+  Product.find().then((Products) => {
     res.render("admin/products", {
       prods: Products,
       pageTitle: "Admin Products",
@@ -105,11 +101,12 @@ module.exports.getAdminProducts = (req, res, next) => {
 
 module.exports.postDeleteProducts = (req, res, next) => {
   let productId = req.body.productId; 
-  Product.deleteById(productId)
+  Product.deleteOne({_id:productId})
   .then(() => {
-   req.user.removeCartItem(productId).then(() => {
-      res.redirect("/admin/products");
-    })
+    res.redirect("/admin/products");
+  //  req.user.removeCartItem(productId).then(() => {
+      
+  //   })
     
   });
 };

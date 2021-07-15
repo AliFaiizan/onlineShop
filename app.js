@@ -1,8 +1,13 @@
 const path = require("path");
 const express = require("express");
 const bodyParser = require("body-parser");
-const MongoConnect=require('./util/database').MongoConnect;
+
+const mongoose = require("mongoose");
+
+
+
 const User= require('./Model/user')
+
 
 
 const app = express();
@@ -23,10 +28,10 @@ app.use(express.static(path.join(__dirname, "public")));
 //Dummy user  
 
 app.use((req, res, next) => {
-  User.findById("60e5cf0548e60bf93f01781d")
+  User.findById("60ed68b3076fcc405ca9635f")
     .then((user) => {
-      req.user = new User(user.name,user.pwd,user.cart,user._id);
-      
+      req.user = user;
+
       next();
     })
     .catch((err) => {
@@ -39,12 +44,31 @@ app.use(shopRoutes);
 app.use(error.get404Page);
 
 
-MongoConnect(() => {
-   app.listen(3000, () => {
-     console.log("server started on port 3k",);
-   }); 
-})
+mongoose
+  .connect(
+    "mongodb+srv://AliShop:%28Dev%40787%29@cluster0.vmqff.mongodb.net/Shop?authSource=admin&replicaSet=atlas-4e7ld3-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true",
+    { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify :true}
+  )
+  .then(() => {
+    User.findOne()
+      .then((user) => {
+        if (!user) {
+          User.create({
+            name: "Ali",
+            email: "ali@test.com",
+            cart: { items: [], total: 0 },
+          });
+        }
+      })
+      .catch((err) => {
+        console.log(`no user found with that id`);
+      });
 
+    app.listen(3000, () => {
+      console.log(`server started on port 3k`);
+    });
+  })
+  .catch((err) => console.log(err));
 
 
 
