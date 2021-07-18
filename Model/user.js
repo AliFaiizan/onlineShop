@@ -43,7 +43,7 @@ userSchema.methods.addToCart = function(prodId){   //ad to cart method
             { $inc: { "cart.items.$[el].quantity": 1 } },
             {
               arrayFilters: [{ "el.productId": prodId }],
-              new:true
+              new:true //return object ofter modification
             }
           )
           
@@ -63,6 +63,7 @@ userSchema.methods.addToCart = function(prodId){   //ad to cart method
 
 
 }
+
 userSchema.methods.removeCartItem = function (prodId) {
   return mongoose
     .model("User")

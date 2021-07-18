@@ -15,6 +15,7 @@ module.exports.getAddProduct = (req, res, next) => { //mongo
     pageTitle: "Add Product",
     path: "/admin/add-product",
     editing: false,
+    isAuthenticated: req.session.isLogedIn,
   });
 };
 
@@ -28,7 +29,7 @@ module.exports.postAddProduct = (req, res, next) => { //mongo
   const imageUrl = req.body.imageUrl;
   const price = req.body.price;
   const description = req.body.description;
-  const userId=req.user._id;
+  const userId=req.session.user._id;
   
   const product= new Product ({title,price,description,imageUrl,userId})
   product.save().then(() => {
@@ -58,7 +59,8 @@ module.exports.getEditProduct = (req, res, next) => { //mongo
       pageTitle: "Edit Product",
       path: "/admin/edit-product",
       editing,
-      product:product,
+      product: product,
+      isAuthenticated: req.session.isLogedIn,
     });
   });
 };
@@ -94,6 +96,7 @@ module.exports.getAdminProducts = (req, res, next) => {
       hasProducts: Products.length > 0,
       activeShop: true,
       productCSS: true,
+      isAuthenticated: req.session.isLogedIn,
     });
   })
   .catch((err) => {console.log(err)})

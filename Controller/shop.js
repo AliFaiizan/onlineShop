@@ -16,6 +16,8 @@ const Order = require("../Model/order");
  * @param {next} next
  */
 module.exports.getProducts = (req, res, next) => {
+ 
+   
   Product.find()
     .then((products) => {
       
@@ -23,6 +25,7 @@ module.exports.getProducts = (req, res, next) => {
         prods: products,
         pageTitle: "All product",
         path: "/products",
+        isAuthenticated:req.session.isLogedIn,
       });
     })
     .catch((err) => {
@@ -45,6 +48,7 @@ module.exports.getProductById = (req, res, next) => {
         product: product,
         pageTitle: product.title,
         path: "/products",
+        isAuthenticated: req.session.isLogedIn,
       });
     })
     .catch((err) => res.send(err));
@@ -59,6 +63,7 @@ module.exports.getIndex = (req, res, next) => {
         prods: products,
         pageTitle: "Shop",
         path: "/",
+        isAuthenticated: req.session.isLogedIn,
       });
     })
     .catch((err) => {
@@ -69,14 +74,15 @@ module.exports.getIndex = (req, res, next) => {
 // //controler for getting cart information
 
 module.exports.getCart = (req, res, next) => {
-
+ console.log(req.user)
  req.user.populate('cart.items.productId').execPopulate()
  .then((user) => {
      res.render("shop/cart", {
        prods: user.cart.items,
-       cartTotal:user.cart.total,
+       cartTotal: user.cart.total,
        pageTitle: "Cart",
-       path: "/cart", 
+       path: "/cart",
+       isAuthenticated: req.session.isLogedIn,
      });   
  }).catch((err) => {
    console.log(err)
@@ -98,7 +104,7 @@ module.exports.postCart = (req, res, next) => {
       return req.user.updateCartTotal();
     })
     .then(() => {
-      console.log(req.user);
+      
       // req.user = user; ///set updated user to previously saved user
       res.redirect("/cart");
     })
@@ -125,19 +131,19 @@ module.exports.removeCartProduct = (req, res, next) => {
 
 
 module.exports.postOrders=(req,res,next) => {
-  req.user.populate("cart.items.productId").execPopulate()
+ req.user.populate("cart.items.productId").execPopulate()
   .then((populatedUser) => {
      let order = new Order({
-       userId: req.user._id,
+       userId:req.user._id,
        products: populatedUser.cart.items,
-       total: populatedUser.total,
+       total: populatedUser.cart.total,
      });
      return order.save();
   })
   .then(() => {
-    req.user.cart.items=[];
-    req.user.cart.total=0;
-    req.user.save().then(() => {
+   req.user.cart.items=[];
+   req.user.cart.total=0;
+   req.user.save().then(() => {
       res.redirect('/orders')
            
     })
@@ -151,7 +157,8 @@ module.exports.getOrders = (req, res, next) => {
     res.render("shop/orders", {
       pageTitle: "Orders",
       path: "/orders",
-      orders:orders
+      orders: orders,
+      isAuthenticated: req.session.isLogedIn,
     });
   })
   .catch((err) => {
