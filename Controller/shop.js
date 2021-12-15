@@ -48,7 +48,7 @@ module.exports.getProductById = (req, res, next) => {
         product: product,
         pageTitle: product.title,
         path: "/products",
-        isAuthenticated: req.session.isLogedIn,
+        
       });
     })
     .catch((err) => res.send(err));
@@ -63,7 +63,7 @@ module.exports.getIndex = (req, res, next) => {
         prods: products,
         pageTitle: "Shop",
         path: "/",
-        isAuthenticated: req.session.isLogedIn,
+        
       });
     })
     .catch((err) => {
@@ -74,7 +74,7 @@ module.exports.getIndex = (req, res, next) => {
 // //controler for getting cart information
 
 module.exports.getCart = (req, res, next) => {
- console.log(req.user)
+ 
  req.user.populate('cart.items.productId').execPopulate()
  .then((user) => {
      res.render("shop/cart", {
@@ -82,7 +82,7 @@ module.exports.getCart = (req, res, next) => {
        cartTotal: user.cart.total,
        pageTitle: "Cart",
        path: "/cart",
-       isAuthenticated: req.session.isLogedIn,
+       
      });   
  }).catch((err) => {
    console.log(err)
@@ -158,7 +158,7 @@ module.exports.getOrders = (req, res, next) => {
       pageTitle: "Orders",
       path: "/orders",
       orders: orders,
-      isAuthenticated: req.session.isLogedIn,
+      
     });
   })
   .catch((err) => {

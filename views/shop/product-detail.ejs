@@ -21,7 +21,7 @@
         <%= product.description %>
     </p>
 
-   <%- include('../includes/add-to-cart') %>
+   <%- include('../includes/add-to-cart',{product: product,isAuthenticated:isAuthenticated,csrfToken:csrfToken}) %>
 </main>
 
 

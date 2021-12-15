@@ -15,7 +15,7 @@ module.exports.getAddProduct = (req, res, next) => { //mongo
     pageTitle: "Add Product",
     path: "/admin/add-product",
     editing: false,
-    isAuthenticated: req.session.isLogedIn,
+    
   });
 };
 
@@ -48,7 +48,7 @@ module.exports.getEditProduct = (req, res, next) => { //mongo
   if (!editing) {
     return res.redirect("/");
   }
-  Product.findOne({_id:prodId})
+  Product.findOne({_id:prodId,userId:req.user._id})
   //Product.findByPk(prodId)
   .then((product) =>{
     //const product= prod[0]; //sequlize
@@ -60,12 +60,13 @@ module.exports.getEditProduct = (req, res, next) => { //mongo
       path: "/admin/edit-product",
       editing,
       product: product,
-      isAuthenticated: req.session.isLogedIn,
+      
     });
   });
 };
 
 module.exports.postEditProduct = (req, res, next) => {
+  
   const prodId = req.body.productId;
   const updatedTitle = req.body.title;
   const updatedimgUrl = req.body.imageUrl;
@@ -74,42 +75,57 @@ module.exports.postEditProduct = (req, res, next) => {
   
 
   //const lastProductPrice= req.body.productPrice;
-  const updatedProduct ={
-    title:updatedTitle,
-    price:updatedprice,
-    description:updateddescription,
-    imageUrl:updatedimgUrl
-  };
-  return Product.findByIdAndUpdate(prodId,updatedProduct) //we can get one product can call save method on it
-  .then(() =>{console.log('Product sucessfully updated')
-    res.redirect("/admin/products");})
+  // const updatedProduct ={
+  //   title:updatedTitle,
+  //   price:updatedprice,
+  //   description:updateddescription,
+  //   imageUrl:updatedimgUrl
+  // };
+  return Product.findOne({_id:prodId}) //we can get one product can call save method on it
+  .then((product) =>{
+    console.log(product)
+    if(!product||product.userId.toString()!==req.user._id.toString()){
+      console.log('post edit product: something fishy huh?')
+      return res.redirect("/admin/products")
+    }
+    product.title=updatedTitle,
+    product.price=updatedprice,
+    product.description=updateddescription,
+    product.imageUrl=updatedimgUrl
+    product.save().then(() => {
+      console.log(`product sucessfuly updated`)
+      return res.redirect("/admin/products");
+    })
+    
+  })
   .catch((err) => {console.log(err)})
 
 };
 
 module.exports.getAdminProducts = (req, res, next) => {
-  Product.find().then((Products) => {
-    res.render("admin/products", {
-      prods: Products,
-      pageTitle: "Admin Products",
-      path: "/admin/products",
-      hasProducts: Products.length > 0,
-      activeShop: true,
-      productCSS: true,
-      isAuthenticated: req.session.isLogedIn,
+  Product.find({ userId: req.user._id })
+    .then((Products) => {
+      res.render("admin/products", {
+        prods: Products,
+        pageTitle: "Admin Products",
+        path: "/admin/products",
+        hasProducts: Products.length > 0,
+        activeShop: true,
+        productCSS: true,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
     });
-  })
-  .catch((err) => {console.log(err)})
 };
 
 module.exports.postDeleteProducts = (req, res, next) => {
   let productId = req.body.productId; 
-  Product.deleteOne({_id:productId})
-  .then(() => {
-    res.redirect("/admin/products");
-  //  req.user.removeCartItem(productId).then(() => {
-      
-  //   })
-    
-  });
+  Product.deleteOne({ _id: productId ,userId:req.user._id})
+    .then(() => {
+      return req.user.removeCartItem(productId);
+    })
+    .then(() => {
+      res.redirect("/admin/products");
+    });
 };

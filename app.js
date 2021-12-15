@@ -1,14 +1,16 @@
 const path = require("path");
+require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
-
+const csrf= require('csurf');
 const mongoose = require("mongoose");
 const session= require('express-session');
 const MongoDBStore= require('connect-mongodb-session')(session);
+const flash= require('connect-flash');
 
 
 
-const User= require('./Model/user')
+const User= require('./Model/user');
 
 
 
@@ -28,23 +30,35 @@ app.set("views", "views");
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 
-const MONGODB_URI="mongodb+srv://AliShop:%28Dev%40787%29@cluster0.vmqff.mongodb.net/Shop?authSource=admin&replicaSet=atlas-4e7ld3-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true";
+
 
 
 //configuring a session and Store
 const store = new MongoDBStore({
-  uri: MONGODB_URI,
-  collection: "sessions"
+  uri: process.env.MONGODB_URI,  // connection string of  server to database connection
+  collection: "sessions" // where all the session will be stored
 });
+
+
+//const csrfProtection= csrf(); // imported module
+
 
 app.use(session({
     secret: "mysecret",
     resave: false,
     saveUninitialized: false,
-    store  
+    store
   })
 );
 
+app.use(csrf());// must be added after the session because it uses it.
+app.use(flash());
+app.use((req, res, next) => {
+
+  res.locals.isAuthenticated= req.session.isLogedIn;
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
 //Dummy user  
 
 app.use((req, res, next) => {
@@ -62,40 +76,24 @@ app.use((req, res, next) => {
     });
 });
 
+
+
 app.use("/admin", adminRoutes);
 app.use(shopRoutes);
-app.use(authRoutes)
+app.use(authRoutes);
 app.use(error.get404Page);
+
 
 
 mongoose
   .connect(
-    MONGODB_URI,
+    process.env.MONGODB_URI,
     { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify :true}
   )
   .then(() => {
-    User.findOne()
-      .then((user) => {
-        if (!user) {
-          User.create({
-            name: "Ali",
-            email: "ali@test.com",
-            cart: { items: [], total: 0 },
-          });
-        }
-      })
-      .catch((err) => {
-        console.log(`no user found with that id`);
-      });
-
-    app.listen(3000, () => {
+    app.listen(process.env.PORT, () => {
       console.log(`server started on port 3k`);
     });
   })
-  .catch((err) => console.log(err));
-
-
-
-
-
+  .catch((err) => console.log("something fishy"));
 
