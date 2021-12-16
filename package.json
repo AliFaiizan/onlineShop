@@ -9,7 +9,7 @@
     "debugStart": "nodemon app.js",
     "start-server": "node app.js"
   },
-  "author": "Maximilian Schwarzmüller",
+  "author": "Ali Faizan",
   "license": "ISC",
   "devDependencies": {
     "dotenv": "^10.0.0",
@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@sendgrid/mail": "^7.6.0",
+    "@types/bcrypt": "^5.0.0",
     "@types/express": "^4.17.13",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",

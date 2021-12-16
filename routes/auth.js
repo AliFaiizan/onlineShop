@@ -7,7 +7,11 @@ const router = express.Router();
 
 router.get("/login", authController.getLogin);
 router.get("/signup", authController.getSignup);
-router.post("/login", authController.postLogin);
+router.post("/login", [
+    check("email")
+        .isEmail()
+        .withMessage("Email is invalid")
+], authController.postLogin);
 router.post(
   "/signup",
   [
@@ -15,7 +19,7 @@ router.post(
       .isEmail()
       .withMessage("Email is invalid")
       .custom((val, { req }) => {
-    return User.findOne({ email: val }).then((userDoc) => {
+          return User.findOne({ email: val }).then((userDoc) => {
           if (userDoc) {
             return Promise.reject("Email already exists");
           }
@@ -38,6 +42,6 @@ router.post("/logout", authController.postLogout);
 router.get("/resetPassword", authController.getResetPassword);
 router.post("/resetPassword", authController.postResetPassword); // this route will send the email to user
 router.get("/resetPassword/:token", authController.getNewPassword); //shows interface of new password set
-router.post("/newPassword", authController.postNewPassword); // this will updat the user password
+router.post("/newPassword", authController.postNewPassword); // this will update the user password
 
 module.exports = router;
