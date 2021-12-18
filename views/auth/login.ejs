@@ -1,7 +1,8 @@
 <%- include('../includes/head.ejs') %>
-    <link rel="stylesheet" href="/css/forms.css">
+<!--    <link rel="stylesheet" href="/css/forms.css">-->
     <link rel="stylesheet" href="/css/auth.css">
-     <link rel="stylesheet" href="/css/main.css">
+<!--     <link rel="stylesheet" href="/css/main.css">-->
+<script type="text/javascript" src="/js/auth.js" defer></script>
 </head>
 
 <body>
@@ -10,27 +11,76 @@
     <main>
         <% if(errorMessage){ %> 
             <div class="user-message user-message--error"><%= errorMessage %></div>
-            <% } %> 
-        <form class="login-form" action="/login" method="POST">
-            <div class="form-control">
-                <label for="email">E-Mail</label>
-                <input
-                        class="<%= validationMsg.find(e=>e.param==='email')?'invalid':''%>"
-                        type="email" name="email" id="email" value="<%= oldInput.email%>">
+            <% } %>
+            <div class="container  <%= rightPanel===true?'right-panel-active':''%>" id="container">
+                <div class="form-container sign-up-container">
+                    <form class="form-control" method="post" action="/signup">
+                        <h1>Create Account</h1>
+                        <div class="social-container">
+                            <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+                            <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                        <span>or use your email for registration</span>
+                        <input
+                                class="<%= validationMsg.find(e=>e.param==='email')?'invalid': ''%>"
+                                type="email"
+                                name="email"
+                                id="email"
+                                value="<%= oldInput.email%>"
+                        placeholder="Email Address"/>
+
+                        <input
+                                class="<%= validationMsg.find(e=>e.param==='password')?'invalid':''%>"
+                                type="password" name="password" id="password" value="<%=oldInput.password %>"
+                                placeholder="Password" />
+                        <input
+                                class="<%= validationMsg.find(e=>e.param==='confirmPassword')?'invalid':''%>"
+                                type="password" name="confirmPassword" id="confirmPassword" value="<%= oldInput.confirmPassword %>"
+                                placeholder="Confirm Password"/>
+                        <input type="hidden" name="_csrf" value="<%=csrfToken%>">
+                        <button>Sign Up</button>
+                    </form>
+                </div>
+                <div class="form-container sign-in-container">
+                    <form class="form-control" method="post" action="/login">
+                        <h1>Login</h1>
+                        <div class="social-container">
+                            <a href="#" class="social"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="social"><i class="fab fa-google-plus-g"></i></a>
+                            <a href="#" class="social"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                        <span>or use your account</span>
+                        <input
+                                class="<%= validationMsg.find(e=>e.param==='email')?'invalid':''%>"
+                                type="email" name="email" id="email" value="<%= oldInput.email%>" />
+
+                        <input
+                                class="<%= validationMsg.find(e=>e.param==='password')?'invalid':''%>"
+                                type="password" name="password" id="password" value="<%= oldInput.password%>">
+                        <input type="hidden" name="_csrf" value="<%=csrfToken%>">
+
+                        <button>Log In</button>
+                        <a href="/resetPassword">Forgot your password?</a>
+                    </form>
+                </div>
+                <div class="overlay-container">
+                    <div class="overlay">
+                        <div class="overlay-panel overlay-left">
+                            <h1>Welcome Back!</h1>
+                            <p>To keep connected with us please login with your personal info</p>
+                            <button class="ghost" id="signIn">Log In</button>
+                        </div>
+                        <div class="overlay-panel overlay-right">
+                            <h1>Hello, Friend!</h1>
+                            <p>Enter your personal details and start journey with us</p>
+                            <button class="ghost" id="signUp">Sign Up</button>
+                        </div>
+                    </div>
+                </div>
+
+
             </div>
-            <div class="form-control">
-                <label for="password">Password</label>
-                <input
-                        class="<%= validationMsg.find(e=>e.param==='password')?'invalid':''%>"
-                        type="password" name="password" id="password" value="<%= oldInput.password%>">
-            </div>
-            <input
-                    type="hidden" name="_csrf" value="<%=csrfToken%>">
-            <button class="btn" type="submit">Login</button>
-        </form>
-        <div class="centered">
-            <a href="/resetPassword">Reset Password</a>                
-        </div>
-       
     </main>
 <%- include('../includes/end.ejs') %>
+

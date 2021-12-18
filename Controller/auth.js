@@ -29,7 +29,8 @@ module.exports.getLogin = (req, res, next) => {
     pageTitle: "Login",
     errorMessage: message,
     oldInput:{email:'',password:''},
-    validationMsg:[]
+    validationMsg:[],
+    rightPanel:false
   });
 };
 
@@ -60,7 +61,8 @@ module.exports.postLogin = (req, res, next) => {
             pageTitle: "login",
             errorMessage: "Invalid Email or Password",
             oldInput: {email, password },
-            validationMsg: [{param:'email'},{param: 'password'}]
+            validationMsg: [{param:'email'},{param: 'password'}],
+            rightPanel:false
           })
         }
         bcrypt.compare(password, user.password).then((doMatch) => {
@@ -77,7 +79,9 @@ module.exports.postLogin = (req, res, next) => {
               pageTitle: "login",
               errorMessage: "Invalid Email or Password",
               oldInput: {email, password },
-              validationMsg: [{param:'email'},{param: 'password'}]
+              validationMsg: [{param:'email'},{param: 'password'}],
+              rightPanel:false
+
             })
           }
 
@@ -93,12 +97,13 @@ module.exports.postSignup = (req, res, next) => {
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).render("auth/signup", {
+    return res.status(422).render("auth/login", {
       path: "/signup",
       pageTitle: "Signup",
       errorMessage: errors.array()[0].msg,
       oldInput:{email,password,confirmPassword:req.body.confirmPassword},
-      validationMsg:errors.array()
+      validationMsg:errors.array(),
+      rightPanel:true
     });
   }
 
@@ -116,7 +121,7 @@ module.exports.postSignup = (req, res, next) => {
         .sendMail({
           to: email,
           from: "alif.1dev@gmail.com",
-          subject: "You have sucessfully created a account",
+          subject: "You have successfully created a account",
           html: "<h1>Hi Welcome<h1>",
         })
         .catch((err) => console.log(err));
