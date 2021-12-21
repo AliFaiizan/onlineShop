@@ -4,15 +4,15 @@
   "description": "Complete Node.js Guide",
   "main": "app.js",
   "scripts": {
+    "dev": "eval $(cat .env) node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon app.js",
+    "start": "node app.js",
     "debugStart": "nodemon app.js",
-    "start-server": "node app.js"
+    "start-server": "nodemon app.js"
   },
   "author": "Ali Faizan",
   "license": "ISC",
   "devDependencies": {
-    "dotenv": "^10.0.0",
     "nodemon": "^2.0.12"
   },
   "dependencies": {

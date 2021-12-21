@@ -1,5 +1,4 @@
 const path = require("path");
-require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const csrf= require('csurf');
@@ -84,16 +83,15 @@ app.use(authRoutes);
 app.use(error.get404Page);
 
 
-
 mongoose
   .connect(
     process.env.MONGODB_URI,
     { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify :true}
   )
   .then(() => {
-    app.listen(process.env.PORT, () => {
-      console.log(`server started on port 3k`);
+    app.listen(process.env.PORT||3000, () => {
+      console.log(`server started on port ${process.env.PORT}`);
     });
   })
-  .catch((err) => console.log("something fishy"));
+  .catch((err) => console.log("Failed to Start Server"));
 
